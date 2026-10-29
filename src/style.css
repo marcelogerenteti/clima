@@ -1,7 +1,7 @@
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #f8fafc;
-  background: #1f2937;
+  background: #252a34;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,8 +16,120 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background: #252a34;
 }
 
 #app {
   min-height: 100vh;
+}
+
+.app-shell {
+  width: min(100% - 32px, 800px);
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.search-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.search-form input,
+.search-form button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.search-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 0 16px;
+  color: #f8fafc;
+  background: #343b49;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.search-form input::placeholder {
+  color: #b8c0cc;
+}
+
+.search-form input:focus-visible,
+.search-form button:focus-visible {
+  outline-color: #93c5fd;
+}
+
+.search-form button {
+  padding: 0 24px;
+  color: #172033;
+  background: #93c5fd;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.search-form button:hover {
+  background: #bfdbfe;
+}
+
+.weather-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.5fr);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 320px;
+  overflow: hidden;
+  color: #172033;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 18%);
+}
+
+.weather-sidebar,
+.weather-main {
+  padding: 32px;
+}
+
+.weather-sidebar {
+  background: #eef4fb;
+}
+
+.weather-main {
+  background: #ffffff;
+}
+
+.sidebar-content,
+.main-content {
+  min-height: 256px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: min(100% - 24px, 800px);
+    padding: 24px 0;
+  }
+
+  .weather-card {
+    grid-template-columns: 1fr;
+  }
+
+  .weather-sidebar,
+  .weather-main {
+    padding: 24px;
+  }
 }
