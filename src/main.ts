@@ -1,33 +1,56 @@
 import './style.css'
+import { searchWeather } from './services/openMeteo'
+import type { CombinedWeatherData } from './types/weather'
 
-const app = document.querySelector<HTMLDivElement>('#app')
+type UiState = 'empty' | 'loading' | 'result'
 
-if (!app) {
-  throw new Error('Elemento #app não encontrado')
+const searchForm = document.querySelector<HTMLFormElement>('#search-form')
+const cityInput = document.querySelector<HTMLInputElement>('#city-input')
+const searchButton = searchForm?.querySelector<HTMLButtonElement>('button[type="submit"]')
+const weatherCard = document.querySelector<HTMLElement>('#weather-card')
+const sidebarContent = document.querySelector<HTMLElement>('#sidebar-content')
+const mainContent = document.querySelector<HTMLElement>('#main-content')
+
+if (!searchForm || !cityInput || !searchButton || !weatherCard || !sidebarContent || !mainContent) {
+  throw new Error('Elementos da interface não encontrados')
 }
 
-app.innerHTML = `
-  <main class="app-shell">
-    <form class="search-form" id="search-form" role="search">
-      <label class="sr-only" for="city-input">Cidade</label>
-      <input
-        id="city-input"
-        name="city"
-        type="search"
-        placeholder="Digite o nome da cidade"
-        autocomplete="off"
-      />
-      <button type="submit">Buscar</button>
-    </form>
+const renderState = (state: UiState, data?: CombinedWeatherData): void => {
+  weatherCard.dataset.state = state
+  weatherCard.setAttribute('aria-busy', String(state === 'loading'))
+  cityInput.disabled = state === 'loading'
+  searchButton.disabled = state === 'loading'
+  searchButton.textContent = state === 'loading' ? 'Buscando…' : 'Buscar'
+  sidebarContent.replaceChildren()
+  mainContent.replaceChildren()
 
-    <section class="weather-card" id="weather-card" aria-live="polite" aria-busy="false">
-      <aside class="weather-sidebar" id="weather-sidebar" aria-label="Resumo do clima">
-        <div class="sidebar-content" id="sidebar-content"></div>
-      </aside>
+  if (state === 'result' && data) {
+    mainContent.textContent = `Clima encontrado para ${data.location.name}.`
+  } else if (state === 'empty') {
+    const emptyMessage = document.createElement('p')
+    emptyMessage.className = 'empty-state'
+    emptyMessage.textContent = 'Pesquise uma cidade para ver o clima.'
+    mainContent.append(emptyMessage)
+  } else if (state === 'loading') {
+    const loadingMessage = document.createElement('div')
+    loadingMessage.className = 'loading-state'
+    loadingMessage.setAttribute('role', 'status')
+    loadingMessage.innerHTML = '<span class="loading-spinner" aria-hidden="true"></span><span>Buscando o clima…</span>'
+    mainContent.append(loadingMessage)
+  }
+}
 
-      <div class="weather-main" id="weather-main">
-        <div class="main-content" id="main-content"></div>
-      </div>
-    </section>
-  </main>
-`
+renderState('empty')
+
+searchForm.addEventListener('submit', async (event) => {
+  event.preventDefault()
+
+  const cityName = cityInput.value.trim()
+  if (!cityName) {
+    return
+  }
+
+  renderState('loading')
+  const result = await searchWeather(cityName)
+  renderState(result ? 'result' : 'empty', result ?? undefined)
+})
