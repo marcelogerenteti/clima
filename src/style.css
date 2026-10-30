@@ -106,9 +106,87 @@ body {
   min-height: 256px;
 }
 
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+}
+
+.current-temperature,
+.location-name,
+.current-date,
+.day-period,
+.weather-condition {
+  margin: 0;
+}
+
+.current-temperature {
+  color: #172033;
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.location-name {
+  margin-top: 8px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.current-date {
+  color: #526174;
+  font-size: 0.95rem;
+  text-transform: capitalize;
+}
+
+.day-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.period-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.weather-condition {
+  color: #526174;
+}
+
 .main-content {
   display: grid;
   align-content: center;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.metric-item {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: #f5f8fc;
+  border-radius: 8px;
+}
+
+.metric-item dt {
+  color: #526174;
+  font-size: 0.9rem;
+}
+
+.metric-item dd {
+  margin: 0;
+  color: #172033;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .empty-state {
@@ -160,7 +238,7 @@ body {
   border: 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .app-shell {
     width: min(100% - 24px, 800px);
     padding: 24px 0;
@@ -173,5 +251,9 @@ body {
   .weather-sidebar,
   .weather-main {
     padding: 24px;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
   }
 }

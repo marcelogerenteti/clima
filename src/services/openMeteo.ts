@@ -11,7 +11,6 @@ import type {
 const GEOCODING_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search'
 const FORECAST_ENDPOINT = 'https://api.open-meteo.com/v1/forecast'
 const CURRENT_PARAMETERS = [
-  'precipitation_probability',
   'temperature_2m',
   'relative_humidity_2m',
   'apparent_temperature',
@@ -28,6 +27,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value)
 
+const firstFiniteNumber = (values: unknown[] | undefined, fallback: number): number =>
+  values?.find(isFiniteNumber) ?? fallback
+
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0
 
@@ -40,7 +42,6 @@ const isGeocodingResult = (value: unknown): value is GeocodingResult =>
   isNonEmptyString(value.timezone)
 
 const currentFields = [
-  'precipitation_probability',
   'temperature_2m',
   'relative_humidity_2m',
   'apparent_temperature',
@@ -61,12 +62,15 @@ const hasNumericFields = <T extends readonly string[]>(
 const hasStringFields = <T extends readonly string[]>(
   value: Record<string, unknown>,
   fields: T,
-): value is Record<T[number], string> => fields.every((field) => isNonEmptyString(value[field]))
+): value is Record<T[number], string> =>
+  fields.every((field) => typeof value[field] === 'string')
 
-const isWeatherCurrent = (value: unknown): value is WeatherCurrent =>
+const isWeatherCurrent = (value: unknown): value is Omit<WeatherCurrent, 'precipitation_probability'> =>
   isRecord(value) && hasNumericFields(value, currentFields)
 
-const isWeatherCurrentUnits = (value: unknown): value is WeatherCurrentUnits =>
+const isWeatherCurrentUnits = (
+  value: unknown,
+): value is Omit<WeatherCurrentUnits, 'precipitation_probability'> =>
   isRecord(value) && hasStringFields(value, unitFields)
 
 export async function searchCity(cityName: string): Promise<GeocodingResult | null> {
@@ -116,6 +120,8 @@ export async function getWeather(
     latitude: String(latitude),
     longitude: String(longitude),
     current: CURRENT_PARAMETERS,
+    hourly: 'precipitation_probability',
+    forecast_hours: '1',
     timezone: timezone.trim(),
   })
 
@@ -131,9 +137,27 @@ export async function getWeather(
     }
 
     const weather = data as WeatherResponse
-    return isWeatherCurrent(weather.current) && isWeatherCurrentUnits(weather.current_units)
-      ? { current: weather.current, current_units: weather.current_units }
-      : null
+    const precipitationProbability = firstFiniteNumber(
+      weather.hourly?.precipitation_probability,
+      0,
+    )
+    const precipitationProbabilityUnit =
+      weather.hourly_units?.precipitation_probability ?? '%'
+
+    if (
+      !isWeatherCurrent(weather.current) ||
+      !isWeatherCurrentUnits(weather.current_units)
+    ) {
+      return null
+    }
+
+    return {
+      current: { ...weather.current, precipitation_probability: precipitationProbability },
+      current_units: {
+        ...weather.current_units,
+        precipitation_probability: precipitationProbabilityUnit,
+      },
+    }
   } catch {
     return null
   }

@@ -37,6 +37,12 @@ export interface WeatherCurrentUnits {
 export interface WeatherResponse {
   current?: WeatherCurrent
   current_units?: WeatherCurrentUnits
+  hourly?: {
+    precipitation_probability?: number[]
+  }
+  hourly_units?: {
+    precipitation_probability?: string
+  }
 }
 
 export interface WeatherResult {
